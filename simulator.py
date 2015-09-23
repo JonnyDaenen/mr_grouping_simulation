@@ -21,7 +21,7 @@ map_sort_buffer_mb = 100
 red_chunk_size_mb = 128
 red_memory_mb = 1024
 red_merge_factor = 10
-red_sort_buffer_mb = 100 # TODO check if this is the correct value
+red_sort_buffer_mb = 700 # TODO check if this is the correct value
 
 
 def get_mr_cost(data_input_mb, data_interm_mb, sort_correction_enabled = True, reduce_in_memory = True, ):
