@@ -1,5 +1,5 @@
 from mrsettings import MR_settings
-from simulator import MR_cost_model
+from cost_model1 import MR_cost_model
 
 import psycopg2
 import psycopg2.extras
