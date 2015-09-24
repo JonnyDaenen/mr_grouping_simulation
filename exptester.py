@@ -56,7 +56,7 @@ if __name__ == '__main__':
 
         insert_cur.execute("INSERT INTO cost_estimations (job_id, map_cost, shuffle_cost, merge_cost, red_function_cost, red_cost, total_cost, cost_model) "
                            "VALUES(%s, %s, %s, %s, %s, %s, %s, %s)",
-                            (record.job, cost[0], cost[2], cost[3], cost[4], cost[1], sum(cost), "test_with_settings"))
+                            (record.job, cost[0], cost[2], cost[3], cost[4], cost[1], sum(cost[0:2]), "test-with-settings"))
 
     conn.commit()
 
