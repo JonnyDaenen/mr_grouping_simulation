@@ -9,6 +9,10 @@ Python script to test the correctness of a grouping policy.
 
 ## version history
 
+### v0.3
+- new cost model optimized for gumbo
+
+
 ### v0.2
 
 - added settings class

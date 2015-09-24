@@ -40,20 +40,31 @@ class MR_cost_model:
 
         return read_cost, sort_cost, merge_cost, store_cost
 
-    def get_red_cost(self, guard_interm, guarded_interm):
+    def get_red_cost(self, guard_input, guarded_input, guard_interm, guarded_interm):
 
-        # total_interm = guard_interm + guarded_interm
+        mr_settings = self.mr_settings
+
+        total_interm = guard_interm + guarded_interm
 
         # transfer cost
+        transfer_cost = total_interm * mr_settings.cost_transfer
 
+        # transfer startup penalty
+        red_tasks = math.ceil(float(total_interm) / mr_settings.red_chunk_size_mb)
+        map_tasks = math.ceil(float(guard_input+guarded_input) / mr_settings.map_chunk_size_mb)
+        penalty_cost = red_tasks * map_tasks * mr_settings.cost_transfer
 
         # merge cost
-        # red_inmem_correction = 1
-        # red_merge_levels = math.ceil(math.log(red_pieces, mr_settings.red_merge_factor)) + red_inmem_correction
-        #
-        # reduce cost
+        red_inmem_correction = 1
+        red_pieces = max(1,mr_settings.red_chunk_size_mb / float(mr_settings.red_sort_buffer_mb))
+        red_merge_levels = math.log(red_pieces, mr_settings.red_merge_factor) + red_inmem_correction
+        merge_cost = red_merge_levels * (total_interm) * (mr_settings.cost_local_r + mr_settings.cost_local_w)
 
-        pass
+        # reduce cost
+        reduce_cost = total_interm * mr_settings.cost_red
+        # reduce_cost += guard_interm * mr_settings.cost_hdfs_w
+
+        return transfer_cost, penalty_cost, merge_cost, reduce_cost
 
     def get_mr_cost(self, guard_input, guarded_input, guard_interm, guarded_interm, extendedResult=False):
 
@@ -71,20 +82,19 @@ class MR_cost_model:
         self.report("Approx cost:", approx_cost, sum(approx_cost))
         self.report("Sum cost:", sum_cost, sum(sum_cost))
 
-        self.get_red_cost()
+        red_cost = self.get_red_cost(guard_input, guarded_input, guard_interm, guarded_interm)
+        self.report("Red cost:", red_cost, sum(red_cost))
 
-        return sum(map_guard_cost) + sum(map_guarded_cost)
+        result = [sum(map_guard_cost) + sum(map_guarded_cost), sum(red_cost)]
+
+        if extendedResult:
+            result += [red_cost[0] + red_cost[1]]
+            result += [red_cost[2]]
+            result += [red_cost[3]]
+
+        return result
 
 
-def calculate_pct(nogroup, group):
-    return (nogroup - group) / float(nogroup)
-
-
-def redistr_mr(mr_tuple):
-    (m,r) = mr_tuple
-    pct = r/float((m+r))
-    r = m * (0.44 / 0.56)
-    return m,r
 
 
 if __name__ == '__main__':
@@ -112,8 +122,8 @@ if __name__ == '__main__':
         costs = []
         for (Gin, gin, Gout, gout) in inputs[key]:
             cost = cost_model.get_mr_cost(Gin / (1024**2), gin / (1024**2), Gout / (1024**2), gout / (1024**2), True)
-            costs.append(cost)
-            print "-"
+            costs.append(sum(cost[0:2]))
+            print "-", cost
         print sum(costs)
         print "~" * 80
 
