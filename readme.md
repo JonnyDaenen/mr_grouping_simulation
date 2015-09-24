@@ -13,6 +13,7 @@ Python script to test the correctness of a grouping policy.
 
 - added settings class
 - added experiment tester (connection with Postgres DB)
+- optional print output
 
 ### v0.1
 
