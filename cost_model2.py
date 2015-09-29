@@ -1,4 +1,4 @@
-from exptester import create_settings
+from mrsettings import create_settings
 from mrsettings import MR_settings
 
 __author__ = 'Jonny Daenen'
@@ -6,7 +6,7 @@ __author__ = 'Jonny Daenen'
 import math
 
 
-class MR_cost_model:
+class MR_cost_model_gumbo:
 
 
     def __init__(self, mr_settings):
@@ -112,7 +112,7 @@ if __name__ == '__main__':
     }
 
 
-    cost_model = MR_cost_model(create_settings("EXP_021", ""))
+    cost_model = MR_cost_model_gumbo(create_settings("EXP_021", ""))
 
     results = {}
     for key in inputs.keys():

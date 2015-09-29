@@ -1,5 +1,30 @@
 __author__ = 'Jonny Daenen'
 
+def create_settings(exp, opts):
+
+    settings = MR_settings()
+
+    if "021" in exp:
+        settings.mapper_memory_mb = 2048
+        settings.reducer_memory_mb = 4096
+        settings.red_chunk_size_mb = 1024
+        if "test" in opts:
+            settings.mapper_memory_mb = 1024
+            settings.reducer_memory_mb = 1024
+
+    if "022" in exp:
+        settings.mapper_memory_mb = 1024
+        settings.reducer_memory_mb = 1024
+
+
+    if "128" in opts:
+        settings.red_chunk_size_mb = 128
+    if "64" in opts:
+            settings.red_chunk_size_mb = 128
+
+    return settings
+
+
 
 class MR_settings:
     # cost_local_r = 1/160.0 #1
