@@ -9,6 +9,23 @@ import psycopg2.extras
 __author__ = 'Jonny Daenen'
 
 
+def generate_parameters():
+    costs_local_r = [1,10,100]
+    costs_local_w = [1,10,100]
+    costs_hdfs_w = [1,10,100,1000,10000]
+    costs_hdfs_r = [1,10,100,1000,10000]
+    costs_transfer = [1,10,100,1000,10000]
+    costs_sort = [0.1,1,10,100,1000,10000]
+    costs_red = [0.1,1,10,100,1000]
+
+    return [(lr,lw,hr,hw,t,s,r) for r in costs_red
+            for s in costs_sort
+            for t in costs_transfer
+            for hw in costs_hdfs_w
+            for hr in costs_hdfs_r
+            for lw in costs_local_w
+            for lr in costs_local_r]
+
 def is_correct(cpu1, metric1, cpu2, metric2):
     return (cpu1 < cpu2 and metric1 < metric2) or (cpu1 > cpu2 and metric1 > metric2)
 
@@ -21,7 +38,7 @@ def report(jobtimes):
     correct = 0
     speedup_error = 0
     speedup_max_error = 0
-    speedup_min_error = 100000
+    speedup_min_error = 10000000
     for job1 in jobtimes.keys():
         for job2 in jobtimes.keys():
 
@@ -45,10 +62,10 @@ def report(jobtimes):
     print "min error:", speedup_min_error
     print "max error:", speedup_max_error
 
+    return correct / float(counter), speedup_error/float(counter), speedup_min_error, speedup_max_error
 
 
-if __name__ == '__main__':
-
+def test():
 
     conn = psycopg2.connect("dbname=jonny user=jonny")
 
@@ -94,9 +111,15 @@ if __name__ == '__main__':
 
     conn.close()
 
+    return report(jobtimes)
 
-    report(jobtimes)
 
+
+
+if __name__ == '__main__':
+
+    print len(generate_parameters())
+    print test()
 
 
 
