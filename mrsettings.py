@@ -25,13 +25,13 @@ def create_settings(exp, opts, cost_vector = None):
 
 
     if not(cost_vector is None):
-        cost_local_r = cost_vector[0]
-        cost_local_w = cost_vector[1]
-        cost_hdfs_w = cost_vector[2]
-        cost_hdfs_r = cost_vector[3]
-        cost_transfer = cost_vector[4]
-        cost_sort = cost_vector[5]
-        cost_red = cost_vector[6]
+        settings.cost_local_r = cost_vector[0]
+        settings.cost_local_w = cost_vector[1]
+        settings.cost_hdfs_w = cost_vector[2]
+        settings.cost_hdfs_r = cost_vector[3]
+        settings.cost_transfer = cost_vector[4]
+        settings.cost_sort = cost_vector[5]
+        settings.cost_red = cost_vector[6]
 
 
     return settings

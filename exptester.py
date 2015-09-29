@@ -58,14 +58,14 @@ def report(jobtimes):
 
 
 
-    print counter, correct, correct / float(counter), speedup_error/float(counter)
-    print "min error:", speedup_min_error
-    print "max error:", speedup_max_error
+    # print counter, correct, correct / float(counter), speedup_error/float(counter)
+    # print "min error:", speedup_min_error
+    # print "max error:", speedup_max_error
 
     return correct / float(counter), speedup_error/float(counter), speedup_min_error, speedup_max_error
 
 
-def test():
+def test(params=None):
 
     conn = psycopg2.connect("dbname=jonny user=jonny")
 
@@ -75,29 +75,29 @@ def test():
 
     jobtimes = {}
     # for each job
-    print "exp", "opts", "job", \
-        "cpu_millis", "map_millis", "red_millis", "hdfs_bytes_read", "map_output_bytes", \
-        "map_cost", "red_cost", "total_cost"
+    # print "exp", "opts", "job", \
+    #     "cpu_millis", "map_millis", "red_millis", "hdfs_bytes_read", "map_output_bytes", \
+    #     "map_cost", "red_cost", "total_cost"
     for record in cur:
 
         if record.request_bytes == 0 or record.assert_bytes_r1 == 0:
             continue
 
-        # cost_model = MR_cost_model(create_settings(record.exp, record.opts))
+        # cost_model = MR_cost_model(create_settings(record.exp, record.opts,params))
         # cost = cost_model.get_mr_cost(record.hdfs_bytes_read, record.map_output_bytes, False, False, True)
 
-        cost_model = MR_cost_model_gumbo(create_settings(record.exp, record.opts))
+        cost_model = MR_cost_model_gumbo(create_settings(record.exp, record.opts,params))
         cost = cost_model.get_mr_cost(record.hdfs_bytes_read/(2*1024.0**2), record.hdfs_bytes_read/(2*1024.0**2), record.request_bytes/(1024.0**2), record.assert_bytes_r1/(1024.0**2), True)
 
-        # cost_model = MR_cost_model_io(create_settings(record.exp, record.opts))
+        # cost_model = MR_cost_model_io(create_settings(record.exp, record.opts,params))
         # cost = cost_model.get_mr_cost(record.hdfs_bytes_read/(2*1024.0**2), record.hdfs_bytes_read/(2*1024.0**2), record.request_bytes/(1024.0**2), record.assert_bytes_r1/(1024.0**2), True)
 
 
-        print record.exp, record.opts, record.job,
-        print record.assert_bytes_r1, record.request_bytes,
-        print record.cpu_millis, record.map_millis, record.red_millis,
-        print cost[0], cost[1], sum(cost[0:2])
-        print cost[2], cost[3], cost[4]
+        # print record.exp, record.opts, record.job,
+        # print record.assert_bytes_r1, record.request_bytes,
+        # print record.cpu_millis, record.map_millis, record.red_millis,
+        # print cost[0], cost[1], sum(cost[0:2])
+        # print cost[2], cost[3], cost[4]
 
         jobtimes[record.job] = (record.cpu_millis,sum(cost[0:2]),record.opts)
 
@@ -118,9 +118,48 @@ def test():
 
 if __name__ == '__main__':
 
-    print len(generate_parameters())
-    print test()
+    # correct
+    best_correct = None
+    best_correct_params = None
 
+    # avg speedup error
+    best_speeduperr = None
+    best_speeduperr_params = None
 
+    # min error
+    best_minerr = None
+    best_minerr_params = None
 
+    # max error
+    best_maxerr = None
+    best_maxerr_params = None
 
+    paramset = generate_parameters()
+    i = 0
+    for params in paramset:
+        result = test(params)
+        print result
+        i += 1
+        if i == 100:
+            break
+
+        if result[0] > best_correct:
+            best_correct = result[0]
+            best_correct_params = params
+
+        if result[1] < best_speeduperr:
+            best_speeduperr = result[0]
+            best_speeduperr_params = params
+
+        if result[2] < best_minerr:
+            best_minerr = result[0]
+            best_minerr_params = params
+
+        if result[3] < best_maxerr:
+            best_maxerr = result[0]
+            best_maxerr_params = params
+
+    print "best_correct: ", best_correct, best_correct_params
+    print "best_speeduperr: ", best_speeduperr, best_speeduperr_params
+    print "best_minerr: ", best_minerr, best_minerr_params
+    print "best_maxerr: ", best_maxerr, best_maxerr_params

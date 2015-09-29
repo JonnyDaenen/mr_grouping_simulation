@@ -11,7 +11,7 @@ class MR_cost_model_gumbo:
 
     def __init__(self, mr_settings):
         self.mr_settings = mr_settings
-        self.print_enabled = True
+        self.print_enabled = False
 
 
     def report(self, *msg):
