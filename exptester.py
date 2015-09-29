@@ -1,4 +1,5 @@
 from cost_model2 import MR_cost_model_gumbo
+from cost_model3 import MR_cost_model_io
 from mrsettings import MR_settings, create_settings
 from cost_model1 import MR_cost_model
 
@@ -14,6 +15,36 @@ def is_correct(cpu1, metric1, cpu2, metric2):
 
 def calculate_speedup(time1, time2):
     return (time1 - time2) / float(time1)
+
+def report(jobtimes):
+    counter = 0
+    correct = 0
+    speedup_error = 0
+    speedup_max_error = 0
+    speedup_min_error = 100000
+    for job1 in jobtimes.keys():
+        for job2 in jobtimes.keys():
+
+            (cpu1, metric1, opts1) = jobtimes[job1]
+            (cpu2, metric2, opts2) = jobtimes[job2]
+
+            if job1 < job2 and opts1 != opts2:
+                counter += 1
+
+                if is_correct(cpu1, metric1, cpu2, metric2):
+                    correct += 1
+
+                error = abs(calculate_speedup(cpu1,cpu2) - calculate_speedup(metric1, metric2))
+                speedup_error += error
+                speedup_max_error = max(speedup_max_error,error)
+                speedup_min_error = min(speedup_min_error,error)
+
+
+
+    print counter, correct, correct / float(counter), speedup_error/float(counter)
+    print "min error:", speedup_min_error
+    print "max error:", speedup_max_error
+
 
 
 if __name__ == '__main__':
@@ -41,6 +72,10 @@ if __name__ == '__main__':
         cost_model = MR_cost_model_gumbo(create_settings(record.exp, record.opts))
         cost = cost_model.get_mr_cost(record.hdfs_bytes_read/(2*1024.0**2), record.hdfs_bytes_read/(2*1024.0**2), record.request_bytes/(1024.0**2), record.assert_bytes_r1/(1024.0**2), True)
 
+        # cost_model = MR_cost_model_io(create_settings(record.exp, record.opts))
+        # cost = cost_model.get_mr_cost(record.hdfs_bytes_read/(2*1024.0**2), record.hdfs_bytes_read/(2*1024.0**2), record.request_bytes/(1024.0**2), record.assert_bytes_r1/(1024.0**2), True)
+
+
         print record.exp, record.opts, record.job,
         print record.assert_bytes_r1, record.request_bytes,
         print record.cpu_millis, record.map_millis, record.red_millis,
@@ -60,26 +95,7 @@ if __name__ == '__main__':
     conn.close()
 
 
-    counter = 0
-    correct = 0
-    speedup_error = 0
-    for job1 in jobtimes.keys():
-        for job2 in jobtimes.keys():
-
-            (cpu1, metric1, opts1) = jobtimes[job1]
-            (cpu2, metric2, opts2) = jobtimes[job2]
-
-            if job1 < job2 and opts1 != opts2:
-                counter += 1
-
-                if is_correct(cpu1, metric1, cpu2, metric2):
-                    correct += 1
-
-                speedup_error += calculate_speedup(cpu1,cpu2) - calculate_speedup(metric1, metric2)
-
-
-
-    print counter, correct, correct / float(counter), speedup_error/float(counter)
+    report(jobtimes)
 
 
 

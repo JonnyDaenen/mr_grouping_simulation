@@ -1,6 +1,7 @@
 __author__ = 'Jonny Daenen'
 
-def create_settings(exp, opts):
+def create_settings(exp, opts, cost_vector = None):
+
 
     settings = MR_settings()
 
@@ -21,6 +22,17 @@ def create_settings(exp, opts):
         settings.red_chunk_size_mb = 128
     if "64" in opts:
             settings.red_chunk_size_mb = 128
+
+
+    if not(cost_vector is None):
+        cost_local_r = cost_vector[0]
+        cost_local_w = cost_vector[1]
+        cost_hdfs_w = cost_vector[2]
+        cost_hdfs_r = cost_vector[3]
+        cost_transfer = cost_vector[4]
+        cost_sort = cost_vector[5]
+        cost_red = cost_vector[6]
+
 
     return settings
 
