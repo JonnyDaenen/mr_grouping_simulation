@@ -45,7 +45,7 @@ def report(jobtimes):
             (cpu1, metric1, opts1) = jobtimes[job1]
             (cpu2, metric2, opts2) = jobtimes[job2]
 
-            if job1 < job2 and opts1 != opts2:
+            if job1 < job2 :
                 counter += 1
 
                 if is_correct(cpu1, metric1, cpu2, metric2):
@@ -58,9 +58,9 @@ def report(jobtimes):
 
 
 
-    # print counter, correct, correct / float(counter), speedup_error/float(counter)
-    # print "min error:", speedup_min_error
-    # print "max error:", speedup_max_error
+    print counter, correct, correct / float(counter), speedup_error/float(counter)
+    print "min error:", speedup_min_error
+    print "max error:", speedup_max_error
 
     return correct / float(counter), speedup_error/float(counter), speedup_min_error, speedup_max_error
 
@@ -86,11 +86,11 @@ def test(params=None):
         # cost_model = MR_cost_model(create_settings(record.exp, record.opts,params))
         # cost = cost_model.get_mr_cost(record.hdfs_bytes_read, record.map_output_bytes, False, False, True)
 
-        cost_model = MR_cost_model_gumbo(create_settings(record.exp, record.opts,params))
-        cost = cost_model.get_mr_cost(record.hdfs_bytes_read/(2*1024.0**2), record.hdfs_bytes_read/(2*1024.0**2), record.request_bytes/(1024.0**2), record.assert_bytes_r1/(1024.0**2), True)
-
-        # cost_model = MR_cost_model_io(create_settings(record.exp, record.opts,params))
+        # cost_model = MR_cost_model_gumbo(create_settings(record.exp, record.opts,params))
         # cost = cost_model.get_mr_cost(record.hdfs_bytes_read/(2*1024.0**2), record.hdfs_bytes_read/(2*1024.0**2), record.request_bytes/(1024.0**2), record.assert_bytes_r1/(1024.0**2), True)
+
+        cost_model = MR_cost_model_io(create_settings(record.exp, record.opts,params))
+        cost = cost_model.get_mr_cost(record.hdfs_bytes_read/(2*1024.0**2), record.hdfs_bytes_read/(2*1024.0**2), record.request_bytes/(1024.0**2), record.assert_bytes_r1/(1024.0**2), True)
 
 
         # print record.exp, record.opts, record.job,
@@ -114,52 +114,69 @@ def test(params=None):
     return report(jobtimes)
 
 
+def print_intermediate():
+    print "best_correct: ", best_correct, best_correct_params, best_correct_result
+    print "best_speeduperr: ", best_speeduperr, best_speeduperr_params, best_speeduperr_result
+    print "best_minerr: ", best_minerr, best_minerr_params, best_minerr_result
+    print "best_maxerr: ", best_maxerr, best_maxerr_params, best_maxerr_result
 
 
 if __name__ == '__main__':
 
+
+    print "normal results: ", test(None)
+
     # correct
     best_correct = None
     best_correct_params = None
+    best_correct_result = None
 
     # avg speedup error
-    best_speeduperr = None
+    best_speeduperr = 100000
     best_speeduperr_params = None
+    best_speeduperr_result = None
 
     # min error
-    best_minerr = None
+    best_minerr = 100000
     best_minerr_params = None
+    best_minerr_result = None
 
     # max error
-    best_maxerr = None
+    best_maxerr = 100000
     best_maxerr_params = None
+    best_maxerr_result = None
 
     paramset = generate_parameters()
     i = 0
     for params in paramset:
         result = test(params)
-        print result
+        # print result
         i += 1
-        if i == 100:
-            break
+        if i % 1000 == 0:
+            print str(float(i)/len(paramset)) + "% done"
+            print_intermediate()
 
         if result[0] > best_correct:
             best_correct = result[0]
             best_correct_params = params
+            best_correct_result = result
 
         if result[1] < best_speeduperr:
-            best_speeduperr = result[0]
+            best_speeduperr = result[1]
             best_speeduperr_params = params
+            best_speeduperr_result = result
 
         if result[2] < best_minerr:
-            best_minerr = result[0]
+            best_minerr = result[2]
             best_minerr_params = params
+            best_minerr_result = result
 
         if result[3] < best_maxerr:
-            best_maxerr = result[0]
+            best_maxerr = result[3]
             best_maxerr_params = params
+            best_maxerr_result = result
 
-    print "best_correct: ", best_correct, best_correct_params
-    print "best_speeduperr: ", best_speeduperr, best_speeduperr_params
-    print "best_minerr: ", best_minerr, best_minerr_params
-    print "best_maxerr: ", best_maxerr, best_maxerr_params
+    print "best_correct: ", best_correct, best_correct_params, best_correct_result
+    print "best_speeduperr: ", best_speeduperr, best_speeduperr_params, best_speeduperr_result
+    print "best_minerr: ", best_minerr, best_minerr_params, best_minerr_result
+    print "best_maxerr: ", best_maxerr, best_maxerr_params, best_maxerr_result
