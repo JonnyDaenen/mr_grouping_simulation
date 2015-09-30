@@ -63,7 +63,7 @@ if __name__ == '__main__':
         results[key] = []
 
 
-        cost_model = MR_cost_model_gumbo(create_settings("EXP_022", key))
+        cost_model = MR_cost_model_gumbo(create_settings("EXP_022", key, (1, 1, 1, 1, 50, 0.1, 1000)))
         costs = []
         for (Gin, gin, Gout, gout) in inputs[key]:
             cost = cost_model.get_mr_cost(Gin / (1024**2), gin / (1024**2), Gout / (1024**2), gout / (1024**2), True)
