@@ -10,6 +10,8 @@ __author__ = 'Jonny Daenen'
 
 
 def generate_parameters():
+    return []
+
     costs_local_r = [1,10,100]
     costs_local_w = [1,10,100]
     costs_hdfs_w = [1,10,100,1000,10000]
@@ -33,6 +35,16 @@ def is_correct(cpu1, metric1, cpu2, metric2):
 def calculate_speedup(time1, time2):
     return (time1 - time2) / float(time1)
 
+def reorder(cpu1, cpu2, metric1, metric2):
+    if cpu1 < cpu2:
+        help = cpu1
+        cpu1 = cpu2
+        cpu2 = help
+        help = metric1
+        metric1 = metric2
+        metric2 = help
+    return cpu1, cpu2, metric1, metric2
+
 def report(jobtimes):
     counter = 0
     correct = 0
@@ -51,6 +63,8 @@ def report(jobtimes):
                 if is_correct(cpu1, metric1, cpu2, metric2):
                     correct += 1
 
+                (cpu1,cpu2,metric1,metric2) = reorder(cpu1, cpu2, metric1, metric2)
+
                 error = abs(calculate_speedup(cpu1,cpu2) - calculate_speedup(metric1, metric2))
                 speedup_error += error
                 speedup_max_error = max(speedup_max_error,error)
@@ -58,9 +72,9 @@ def report(jobtimes):
 
 
 
-    print counter, correct, correct / float(counter), speedup_error/float(counter)
-    print "min error:", speedup_min_error
-    print "max error:", speedup_max_error
+    # print counter, correct, correct / float(counter), speedup_error/float(counter)
+    # print "min error:", speedup_min_error
+    # print "max error:", speedup_max_error
 
     return correct / float(counter), speedup_error/float(counter), speedup_min_error, speedup_max_error
 
@@ -86,11 +100,11 @@ def test(params=None):
         # cost_model = MR_cost_model(create_settings(record.exp, record.opts,params))
         # cost = cost_model.get_mr_cost(record.hdfs_bytes_read, record.map_output_bytes, False, False, True)
 
-        # cost_model = MR_cost_model_gumbo(create_settings(record.exp, record.opts,params))
-        # cost = cost_model.get_mr_cost(record.hdfs_bytes_read/(2*1024.0**2), record.hdfs_bytes_read/(2*1024.0**2), record.request_bytes/(1024.0**2), record.assert_bytes_r1/(1024.0**2), True)
-
-        cost_model = MR_cost_model_io(create_settings(record.exp, record.opts,params))
+        cost_model = MR_cost_model_gumbo(create_settings(record.exp, record.opts,params))
         cost = cost_model.get_mr_cost(record.hdfs_bytes_read/(2*1024.0**2), record.hdfs_bytes_read/(2*1024.0**2), record.request_bytes/(1024.0**2), record.assert_bytes_r1/(1024.0**2), True)
+
+        # cost_model = MR_cost_model_io(create_settings(record.exp, record.opts,params))
+        # cost = cost_model.get_mr_cost(record.hdfs_bytes_read/(2*1024.0**2), record.hdfs_bytes_read/(2*1024.0**2), record.request_bytes/(1024.0**2), record.assert_bytes_r1/(1024.0**2), True)
 
 
         # print record.exp, record.opts, record.job,
