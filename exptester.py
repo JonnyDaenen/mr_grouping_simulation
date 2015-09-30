@@ -136,6 +136,12 @@ def print_intermediate():
     print "best_maxerr: ", best_maxerr, best_maxerr_params, best_maxerr_result
 
 
+def print_progress(i, paramset):
+    if i % 1000 == 0:
+            print str(float(i)/len(paramset)) + "% done:", i, "out of", len(paramset)
+            print_intermediate()
+
+
 if __name__ == '__main__':
 
     jobs = get_data()
@@ -163,14 +169,13 @@ if __name__ == '__main__':
     best_maxerr_result = None
 
     paramset = generate_parameters()
+    print "testing", len(paramset), "parameters"
     i = 0
     for params in paramset:
         result = test(jobs, params)
         # print result
         i += 1
-        if i % 1000 == 0:
-            print str(float(i)/len(paramset)) + "% done"
-            print_intermediate()
+        print_progress(i, paramset)
 
         if result[0] > best_correct:
             best_correct = result[0]
