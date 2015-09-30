@@ -27,12 +27,14 @@ def generate_parameters():
             for lw in costs_local_w
             for lr in costs_local_r]
 
+
 def is_correct(cpu1, metric1, cpu2, metric2):
     return (cpu1 < cpu2 and metric1 < metric2) or (cpu1 > cpu2 and metric1 > metric2)
 
 
 def calculate_speedup(time1, time2):
     return (time1 - time2) / float(time1)
+
 
 def reorder(cpu1, cpu2, metric1, metric2):
     if cpu1 < cpu2:
@@ -43,6 +45,7 @@ def reorder(cpu1, cpu2, metric1, metric2):
         metric1 = metric2
         metric2 = help
     return cpu1, cpu2, metric1, metric2
+
 
 def report(jobtimes):
     counter = 0
@@ -77,6 +80,7 @@ def report(jobtimes):
 
     return correct / float(counter), speedup_error/float(counter), speedup_min_error, speedup_max_error
 
+
 def get_data():
     conn = psycopg2.connect("dbname=jonny user=jonny")
 
@@ -89,6 +93,7 @@ def get_data():
     conn.close()
 
     return jobs
+
 
 def test(job_records, params=None):
 
