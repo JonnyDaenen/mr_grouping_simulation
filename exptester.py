@@ -10,7 +10,6 @@ __author__ = 'Jonny Daenen'
 
 
 def generate_parameters():
-    return []
 
     costs_local_r = [1,10,100]
     costs_local_w = [1,10,100]
