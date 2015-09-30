@@ -13,9 +13,9 @@ def generate_parameters():
 
     costs_local_r = [1,10,100]
     costs_local_w = [1,10,100]
-    costs_hdfs_w = [1,10,100,1000,10000]
-    costs_hdfs_r = [1,10,100,1000,10000]
-    costs_transfer = [1,10,100,1000,10000]
+    costs_hdfs_w = [1,5,10,50,100,1000,10000]
+    costs_hdfs_r = [1,5,10,50,100,1000,10000]
+    costs_transfer = [1,5,10,50,100,1000,10000]
     costs_sort = [0.1,1,10,100,1000,10000]
     costs_red = [0.1,1,10,100,1000]
 
@@ -77,21 +77,28 @@ def report(jobtimes):
 
     return correct / float(counter), speedup_error/float(counter), speedup_min_error, speedup_max_error
 
-
-def test(params=None):
-
+def get_data():
     conn = psycopg2.connect("dbname=jonny user=jonny")
 
     cur = conn.cursor(cursor_factory = psycopg2.extras.NamedTupleCursor)
-    insert_cur = conn.cursor()
     cur.execute("SELECT exp, opts, job, cpu_millis, map_millis, red_millis, hdfs_bytes_read, map_output_bytes, ASSERT_BYTES_R1, REQUEST_BYTES FROM jobs;")
+
+    jobs = cur.fetchall();
+
+    cur.close()
+    conn.close()
+
+    return jobs
+
+def test(job_records, params=None):
+
 
     jobtimes = {}
     # for each job
     # print "exp", "opts", "job", \
     #     "cpu_millis", "map_millis", "red_millis", "hdfs_bytes_read", "map_output_bytes", \
     #     "map_cost", "red_cost", "total_cost"
-    for record in cur:
+    for record in job_records:
 
         if record.request_bytes == 0 or record.assert_bytes_r1 == 0:
             continue
@@ -118,11 +125,6 @@ def test(params=None):
         #                    "VALUES(%s, %s, %s, %s, %s, %s, %s, %s)",
         #                     (record.job, cost[0], cost[2], cost[3], cost[4], cost[1], sum(cost[0:2]), "test-v2"))
 
-    conn.commit()
-
-    cur.close()
-
-    conn.close()
 
     return report(jobtimes)
 
@@ -136,8 +138,9 @@ def print_intermediate():
 
 if __name__ == '__main__':
 
+    jobs = get_data()
 
-    print "normal results: ", test(None)
+    print "normal results: ", test(jobs, None)
 
     # correct
     best_correct = None
@@ -162,7 +165,7 @@ if __name__ == '__main__':
     paramset = generate_parameters()
     i = 0
     for params in paramset:
-        result = test(params)
+        result = test(jobs, params)
         # print result
         i += 1
         if i % 1000 == 0:
