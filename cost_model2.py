@@ -56,9 +56,9 @@ class MR_cost_model_gumbo:
 
         # merge cost
         red_inmem_correction = 1
-        red_pieces = max(1,mr_settings.red_chunk_size_mb / float(mr_settings.red_sort_buffer_mb))
+        red_pieces = max(1, mr_settings.red_chunk_size_mb / float(mr_settings.red_sort_buffer_mb))
         red_merge_levels = math.log(red_pieces, mr_settings.red_merge_factor) + red_inmem_correction
-        merge_cost = red_merge_levels * (total_interm) * (mr_settings.cost_local_r + mr_settings.cost_local_w)
+        merge_cost = red_merge_levels * total_interm * (mr_settings.cost_local_r + mr_settings.cost_local_w)
 
         # reduce cost
         reduce_cost = total_interm * mr_settings.cost_red

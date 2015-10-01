@@ -47,7 +47,13 @@ def reorder(cpu1, cpu2, metric1, metric2):
     return cpu1, cpu2, metric1, metric2
 
 
+
+
 def report(jobtimes):
+
+
+    file = open("output_io.csv", "w")
+
     counter = 0
     correct = 0
     speedup_error = 0
@@ -74,7 +80,9 @@ def report(jobtimes):
                 speedup_max_error = max(speedup_max_error,error)
                 speedup_min_error = min(speedup_min_error,error)
 
+                file.write("paper,"+job1+","+job2+","+str(error)+"\n")
 
+    file.close()
 
     # print counter, correct, correct / float(counter), speedup_error/float(counter)
     # print "min error:", speedup_min_error
@@ -99,7 +107,7 @@ def get_data():
 
 def test(job_records, params=None):
 
-
+    # Calculate costs
     jobtimes = {}
     # for each job
     # print "exp", "opts", "job", \
@@ -110,11 +118,11 @@ def test(job_records, params=None):
         if record.request_bytes == 0 or record.assert_bytes_r1 == 0:
             continue
 
-        cost_model = MR_cost_model(create_settings(record.exp, record.opts,params))
-        cost = cost_model.get_mr_cost(record.hdfs_bytes_read, record.map_output_bytes, False, False, True)
+        # cost_model = MR_cost_model(create_settings(record.exp, record.opts,params))
+        # cost = cost_model.get_mr_cost(record.hdfs_bytes_read, record.map_output_bytes, False, False, True)
 
-        # cost_model = MR_cost_model_gumbo(create_settings(record.exp, record.opts,params))
-        # cost = cost_model.get_mr_cost(record.hdfs_bytes_read/(2*1024.0**2), record.hdfs_bytes_read/(2*1024.0**2), record.request_bytes/(1024.0**2), record.assert_bytes_r1/(1024.0**2), True)
+        cost_model = MR_cost_model_gumbo(create_settings(record.exp, record.opts,params))
+        cost = cost_model.get_mr_cost(record.hdfs_bytes_read/(2*1024.0**2), record.hdfs_bytes_read/(2*1024.0**2), record.request_bytes/(1024.0**2), record.assert_bytes_r1/(1024.0**2), True)
 
         # cost_model = MR_cost_model_io(create_settings(record.exp, record.opts,params))
         # cost = cost_model.get_mr_cost(record.hdfs_bytes_read/(2*1024.0**2), record.hdfs_bytes_read/(2*1024.0**2), record.request_bytes/(1024.0**2), record.assert_bytes_r1/(1024.0**2), True)
@@ -137,6 +145,7 @@ def test(job_records, params=None):
 
 
 def print_intermediate():
+    return
     print "best_correct: ", best_correct, best_correct_params, best_correct_result
     print "best_speeduperr: ", best_speeduperr, best_speeduperr_params, best_speeduperr_result
     print "best_minerr: ", best_minerr, best_minerr_params, best_minerr_result
@@ -177,6 +186,7 @@ if __name__ == '__main__':
 
     paramset = generate_parameters()
     print "testing", len(paramset), "parameters"
+    print "testing", len(jobs), "jobs"
     i = 0
     for params in paramset:
         result = test(jobs, params)
