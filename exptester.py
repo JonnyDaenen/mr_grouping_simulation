@@ -1,3 +1,4 @@
+from cost_model0 import MR_cost_model_basic
 from cost_model2 import MR_cost_model_gumbo
 from cost_model3 import MR_cost_model_io
 from mrsettings import MR_settings, create_settings
@@ -10,6 +11,8 @@ __author__ = 'Jonny Daenen'
 
 
 def generate_parameters():
+
+    return []
 
     costs_local_r = [1,10,100]
     costs_local_w = [1,10,100]
@@ -95,7 +98,7 @@ def get_data():
     conn = psycopg2.connect("dbname=jonny user=jonny")
 
     cur = conn.cursor(cursor_factory = psycopg2.extras.NamedTupleCursor)
-    cur.execute("SELECT exp, opts, job, cpu_millis, map_millis, red_millis, hdfs_bytes_read, map_output_bytes, ASSERT_BYTES_R1, REQUEST_BYTES FROM jobs;")
+    cur.execute("SELECT exp, opts, job, cpu_millis, map_millis, red_millis, hdfs_bytes_read, map_output_bytes, ASSERT_BYTES_R1, REQUEST_BYTES FROM jobs WHERE exp ='EXP_022';")
 
     jobs = cur.fetchall();
 
@@ -121,11 +124,15 @@ def test(job_records, params=None):
         # cost_model = MR_cost_model(create_settings(record.exp, record.opts,params))
         # cost = cost_model.get_mr_cost(record.hdfs_bytes_read, record.map_output_bytes, False, False, True)
 
-        cost_model = MR_cost_model_gumbo(create_settings(record.exp, record.opts,params))
-        cost = cost_model.get_mr_cost(record.hdfs_bytes_read/(2*1024.0**2), record.hdfs_bytes_read/(2*1024.0**2), record.request_bytes/(1024.0**2), record.assert_bytes_r1/(1024.0**2), True)
+        # cost_model = MR_cost_model_gumbo(create_settings(record.exp, record.opts,params))
+        # cost = cost_model.get_mr_cost(record.hdfs_bytes_read/(2*1024.0**2), record.hdfs_bytes_read/(2*1024.0**2), record.request_bytes/(1024.0**2), record.assert_bytes_r1/(1024.0**2), True)
 
         # cost_model = MR_cost_model_io(create_settings(record.exp, record.opts,params))
         # cost = cost_model.get_mr_cost(record.hdfs_bytes_read/(2*1024.0**2), record.hdfs_bytes_read/(2*1024.0**2), record.request_bytes/(1024.0**2), record.assert_bytes_r1/(1024.0**2), True)
+
+
+        cost_model = MR_cost_model_basic(create_settings(record.exp, record.opts,params))
+        cost = cost_model.get_mr_cost(record.hdfs_bytes_read, record.map_output_bytes, False, True)
 
 
         # print record.exp, record.opts, record.job,
