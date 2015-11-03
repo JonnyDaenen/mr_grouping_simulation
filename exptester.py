@@ -78,7 +78,7 @@ def report(jobtimes):
                 (cpu1,cpu2,metric1,metric2) = reorder(cpu1, cpu2, metric1, metric2)
 
                 # calculate speedup error
-                error = abs(calculate_speedup(cpu1,cpu2) - calculate_speedup(metric1, metric2))
+                error = abs(calculate_speedup(cpu1, cpu2) - calculate_speedup(metric1, metric2))
                 speedup_error += error
                 speedup_max_error = max(speedup_max_error,error)
                 speedup_min_error = min(speedup_min_error,error)
@@ -98,7 +98,7 @@ def get_data():
     conn = psycopg2.connect("dbname=jonny user=jonny")
 
     cur = conn.cursor(cursor_factory = psycopg2.extras.NamedTupleCursor)
-    cur.execute("SELECT exp, opts, job, cpu_millis, map_millis, red_millis, hdfs_bytes_read, map_output_bytes, ASSERT_BYTES_R1, REQUEST_BYTES FROM jobs WHERE exp ='EXP_022';")
+    cur.execute("SELECT exp, opts, job, cpu_millis, map_millis, red_millis, hdfs_bytes_read, map_output_bytes, ASSERT_BYTES_R1, REQUEST_BYTES FROM jobs ;")  # WHERE exp ='EXP_022'
 
     jobs = cur.fetchall();
 
@@ -121,18 +121,18 @@ def test(job_records, params=None):
         if record.request_bytes == 0 or record.assert_bytes_r1 == 0:
             continue
 
-        # cost_model = MR_cost_model(create_settings(record.exp, record.opts,params))
-        # cost = cost_model.get_mr_cost(record.hdfs_bytes_read, record.map_output_bytes, False, False, True)
-
-        # cost_model = MR_cost_model_gumbo(create_settings(record.exp, record.opts,params))
-        # cost = cost_model.get_mr_cost(record.hdfs_bytes_read/(2*1024.0**2), record.hdfs_bytes_read/(2*1024.0**2), record.request_bytes/(1024.0**2), record.assert_bytes_r1/(1024.0**2), True)
+        cost_model = MR_cost_model(create_settings(record.exp, record.opts,params))
+        cost = cost_model.get_mr_cost(record.hdfs_bytes_read/(1024.0**2), record.map_output_bytes/(1024.0**2), False, False, True)
+        #
+        cost_model = MR_cost_model_gumbo(create_settings(record.exp, record.opts,params))
+        cost = cost_model.get_mr_cost(record.hdfs_bytes_read/(2*1024.0**2), record.hdfs_bytes_read/(2*1024.0**2), record.request_bytes/(1024.0**2), record.assert_bytes_r1/(1024.0**2), True)
 
         # cost_model = MR_cost_model_io(create_settings(record.exp, record.opts,params))
         # cost = cost_model.get_mr_cost(record.hdfs_bytes_read/(2*1024.0**2), record.hdfs_bytes_read/(2*1024.0**2), record.request_bytes/(1024.0**2), record.assert_bytes_r1/(1024.0**2), True)
 
 
-        cost_model = MR_cost_model_basic(create_settings(record.exp, record.opts,params))
-        cost = cost_model.get_mr_cost(record.hdfs_bytes_read, record.map_output_bytes, False, True)
+        # cost_model = MR_cost_model_basic(create_settings(record.exp, record.opts, params))
+        # cost = cost_model.get_mr_cost(record.hdfs_bytes_read/(1024.0**2), record.map_output_bytes/(1024.0**2), False, True)
 
 
         # print record.exp, record.opts, record.job,
@@ -141,7 +141,8 @@ def test(job_records, params=None):
         # print cost[0], cost[1], sum(cost[0:2])
         # print cost[2], cost[3], cost[4]
 
-        jobtimes[record.job] = (record.cpu_millis,sum(cost[0:2]),record.opts)
+        # jobtimes[record.job] = (record.cpu_millis, sum(cost[0:2]), record.opts)
+        jobtimes[record.job] = (record.map_millis + record.red_millis, sum(cost[0:2]), record.opts)
 
         # insert_cur.execute("INSERT INTO cost_estimations (job_id, map_cost, shuffle_cost, merge_cost, red_function_cost, red_cost, total_cost, cost_model) "
         #                    "VALUES(%s, %s, %s, %s, %s, %s, %s, %s)",
