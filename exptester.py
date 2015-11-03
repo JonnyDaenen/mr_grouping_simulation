@@ -32,7 +32,9 @@ def generate_parameters():
 
 
 def is_correct(cpu1, metric1, cpu2, metric2):
-    return (cpu1 < cpu2 and metric1 < metric2) or (cpu1 > cpu2 and metric1 > metric2)
+    if abs(cpu1-cpu2) < 60000: #1 minute means they are equal
+        cpu1 = cpu2
+    return (cpu1 < cpu2 and metric1 < metric2) or (cpu1 >= cpu2 and metric1 >= metric2)
 
 
 def calculate_speedup(time1, time2):
@@ -98,7 +100,7 @@ def get_data():
     conn = psycopg2.connect("dbname=jonny user=jonny")
 
     cur = conn.cursor(cursor_factory = psycopg2.extras.NamedTupleCursor)
-    cur.execute("SELECT exp, opts, job, cpu_millis, map_millis, red_millis, hdfs_bytes_read, map_output_bytes, ASSERT_BYTES_R1, REQUEST_BYTES FROM jobs ;")  # WHERE exp ='EXP_022'
+    cur.execute("SELECT exp, opts, job, cpu_millis, map_millis, red_millis, hdfs_bytes_read, map_output_bytes, ASSERT_BYTES_R1, REQUEST_BYTES FROM jobs;")  # WHERE exp ='EXP_022'
 
     jobs = cur.fetchall();
 
@@ -162,7 +164,7 @@ def print_intermediate():
 
 def print_progress(i, paramset):
     if i % 1000 == 0:
-            print str(float(i)/len(paramset)) + "% done:", i, "out of", len(paramset)
+            print str(100*float(i)/len(paramset)) + "% done:", i, "out of", len(paramset)
             print_intermediate()
 
 
