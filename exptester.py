@@ -121,9 +121,9 @@ def test(job_records, params=None):
         if record.request_bytes == 0 or record.assert_bytes_r1 == 0:
             continue
 
-        cost_model = MR_cost_model(create_settings(record.exp, record.opts,params))
-        cost = cost_model.get_mr_cost(record.hdfs_bytes_read/(1024.0**2), record.map_output_bytes/(1024.0**2), False, False, True)
-        #
+        # cost_model = MR_cost_model(create_settings(record.exp, record.opts,params))
+        # cost = cost_model.get_mr_cost(record.hdfs_bytes_read/(1024.0**2), record.map_output_bytes/(1024.0**2), False, False, True)
+
         cost_model = MR_cost_model_gumbo(create_settings(record.exp, record.opts,params))
         cost = cost_model.get_mr_cost(record.hdfs_bytes_read/(2*1024.0**2), record.hdfs_bytes_read/(2*1024.0**2), record.request_bytes/(1024.0**2), record.assert_bytes_r1/(1024.0**2), True)
 
