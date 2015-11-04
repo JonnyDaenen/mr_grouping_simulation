@@ -32,8 +32,13 @@ def generate_parameters():
 
 
 def is_correct(cpu1, metric1, cpu2, metric2):
-    if abs(cpu1-cpu2) < 60000: #1 minute means they are equal
+    if abs((cpu1-cpu2)/float(cpu1+cpu2)) < 0.01:
+        # print "cpu", cpu1, cpu2
         cpu1 = cpu2
+    if abs((metric1-metric2)/float(metric1+metric2)) < 0.01:
+        # print metric1, metric2
+        metric1 = metric2
+
     return (cpu1 < cpu2 and metric1 < metric2) or (cpu1 >= cpu2 and metric1 >= metric2)
 
 
@@ -70,9 +75,8 @@ def report(jobtimes):
             (cpu1, metric1, opts1) = jobtimes[job1]
             (cpu2, metric2, opts2) = jobtimes[job2]
 
-            if job1 < job2 :
+            if job1 < job2:
                 counter += 1
-
                 if is_correct(cpu1, metric1, cpu2, metric2):
                     correct += 1
 
@@ -100,9 +104,11 @@ def get_data():
     conn = psycopg2.connect("dbname=jonny user=jonny")
 
     cur = conn.cursor(cursor_factory = psycopg2.extras.NamedTupleCursor)
-    cur.execute("SELECT exp, opts, job, cpu_millis, map_millis, red_millis, hdfs_bytes_read, map_output_bytes, ASSERT_BYTES_R1, REQUEST_BYTES FROM jobs;")  # WHERE exp ='EXP_022'
+    cur.execute("SELECT exp, opts, job, cpu_millis, map_millis, red_millis, "\
+                "hdfs_bytes_read, map_output_bytes, ASSERT_BYTES_R1, REQUEST_BYTES, "\
+                "totalmaptime, totalreducetime, totalshuffletime, totalmergetime FROM jobs;")  # WHERE exp ='EXP_022'
 
-    jobs = cur.fetchall();
+    jobs = cur.fetchall()
 
     cur.close()
     conn.close()
@@ -144,7 +150,8 @@ def test(job_records, params=None):
         # print cost[2], cost[3], cost[4]
 
         # jobtimes[record.job] = (record.cpu_millis, sum(cost[0:2]), record.opts)
-        jobtimes[record.job] = (record.map_millis + record.red_millis, sum(cost[0:2]), record.opts)
+        # jobtimes[record.job] = (record.map_millis + record.red_millis, sum(cost[0:2]), record.opts)
+        jobtimes[record.job] = (record.totalmaptime + record.totalreducetime + record.totalmergetime + record.totalshuffletime, sum(cost[0:2]), record.opts)
 
         # insert_cur.execute("INSERT INTO cost_estimations (job_id, map_cost, shuffle_cost, merge_cost, red_function_cost, red_cost, total_cost, cost_model) "
         #                    "VALUES(%s, %s, %s, %s, %s, %s, %s, %s)",
